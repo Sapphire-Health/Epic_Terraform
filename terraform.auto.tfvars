@@ -1,0 +1,41 @@
+location = "eastus2"
+data_storagetype = "StandardSSD_LRS"
+vm_size = "Standard_D2_v5"
+sql_username = "LCMCsqladmin"
+sql_password = "thisIsKat11"
+hsw_servername0 = "EPIC-AZR-HSW00"
+hsw_servername1 = "EPIC-AZR-HSW01"
+hsw_ip_address0 = "10.195.113.4"
+hsw_ip_address1 = "10.195.113.5"
+hsw_epicappname = "HSW"
+wbs_servername0 = "EPIC-AZR-WBS00"
+wbs_servername1 = "EPIC-AZR-WBS01"
+wbs_ip_address0 = "10.195.114.4"
+wbs_ip_address1 = "10.195.114.5"
+wbs_epicappname = "WBS"
+ic_servername0 = "EPIC-AZR-IC00"
+ic_servername1 = "EPIC-AZR-IC01"
+ic_ip_address0 = "10.195.114.6"
+ic_ip_address1 = "10.195.114.7"
+ic_epicappname = "IC"
+cc_servername0 = "EPIC-AZR-CC00"
+cc_servername1 = "EPIC-AZR-CC01"
+cc_ip_address0 = "10.195.112.6"
+cc_ip_address1 = "10.195.112.7"
+cc_epicappname = "CloudConnector"
+
+sp_servername  = "EPIC-AZR-SP00"
+sp_ip_address  = "10.195.114.8"
+
+kpr_servername  = "EPIC-AZR-KPR00"
+kpr_ip_address  = "10.195.114.9"
+
+
+timezone = "Central Standard Time"
+os = {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-Datacenter"
+    version   = "latest"
+}
+
