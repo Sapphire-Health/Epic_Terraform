@@ -23,6 +23,7 @@ resource "azurerm_windows_virtual_machine" "vm" {
   resource_group_name = var.rgname
   location            = var.location
   size                = var.vm_size
+  availability_set_id = var.aset_id
   admin_username      = var.admin_username
   admin_password      = var.admin_password
   timezone            = var.timezone

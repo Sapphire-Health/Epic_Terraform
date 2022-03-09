@@ -16,9 +16,72 @@ variable "admin_password" {
 	sensitive = true
 }
 
+variable "main_vnet_name" {
+    type = string
+    description = "Name of existing main VNET"
+}
+
+variable "main_vnet_rg" {
+    type = string
+    description = "Resource Group of existing main VNET"
+}
+
+variable "epic_mgmt_subnet" {
+    type = list
+    description = "IP Space of Epic Management subnet"
+}
+
+variable "azurefirewall_subnet" {
+    type = list
+    description = "IP Space of Azure Firewall subnet (must be /26)"
+}
+
+variable "wss_subnet" {
+    type = list
+    description = "IP Space of Web & Service Server subnet"
+}
+
+variable "hsw_subnet" {
+    type = list
+    description = "IP Space of Hyperspace Web subnet"
+}
+
+variable "cogito_subnet" {
+    type = list
+    description = "IP Space of Cogito subnet"
+}
+
+variable "hyperspace_subnet" {
+    type = list
+    description = "IP Space of Hyperspace VDA subnet"
+}
+
+variable "dmz_subnet" {
+    type = list
+    description = "IP Space of DMZ subnet"
+}
+
+variable "domain_name" {
+    type = string
+    description = "Account for Domain Join"
+	sensitive = true
+}
+
+variable "domain_OU" {
+    type = string
+    description = "OU to put Domain Joined machines"
+	sensitive = true
+}
+
+variable "domain_username" {
+    type = string
+    description = "Account for Domain Join"
+	sensitive = true
+}
+
 variable "domain_password" {
     type = string
-    description = "Domain Admin password"
+    description = "Password for Domain Join Account"
 	sensitive = true
 }
 
@@ -46,48 +109,193 @@ variable "vm_size" {
     default = "Standard_D2_v5"
 }
 
-variable "hsw_servername0" {
-    type = string
-    description = "Server name of the virtual machine"
+variable "vm_count" {
+	type = map
+	description = "The number of servers to build of each type"
+	default = {
+			"bca" = 0
+			"bcaw" = 0
+			"ce" = 0
+			"cerp" = 0
+			"citrixcc" = 0			
+			"dss" = 0
+			"eclink" = 0
+			"eps" = 0
+			"fax" = 0
+			"hsw" = 0
+			"icbg" = 0
+			"icfg" = 0
+			"ivr" = 0
+			"kpr" = 0
+			"myc" = 0
+			"sp" = 0
+			"wbs" = 0
+			"ww" = 0
+	}
 }
 
-variable "hsw_servername1" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "hsw_ip_address0" {
-    type = string
+variable "bca_ip_address" {
+    type = list
     description = "Private static IP address"
 }
 
-variable "hsw_ip_address1" {
+variable "bca_epicappname" {
     type = string
+    description = "BCA Epic application name"
+}
+
+variable "bcaw_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "bcaw_epicappname" {
+    type = string
+    description = "BCAW Epic application name"
+}
+
+variable "ce_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "ce_epicappname" {
+    type = string
+    description = "Care Everywhere Epic application name"
+}
+
+variable "cerp_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "cerp_epicappname" {
+    type = string
+    description = "Care Everywhere Reverse Proxy Epic application name"
+}
+
+variable "citrixcc_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "citrixcc_epicappname" {
+    type = string
+    description = "Citrix Cloud Connector application name"
+}
+
+variable "dss_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "dss_epicappname" {
+    type = string
+    description = "Digital Signing Server application name"
+}
+
+variable "eclink_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "eclink_epicappname" {
+    type = string
+    description = "EpicCare Link application name"
+}
+
+variable "eps_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "eps_epicappname" {
+    type = string
+    description = "EPS application name"
+}
+
+variable "fax_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "fax_epicappname" {
+    type = string
+    description = "Fax EPS server application name"
+}
+
+variable "hsw_ip_address" {
+    type = list
     description = "Private static IP address"
 }
 
 variable "hsw_epicappname" {
     type = string
-    description = "HSW Epic application name"
+    description = "HSW application name"
 }
 
-variable "wbs_servername0" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "wbs_servername1" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "wbs_ip_address0" {
-    type = string
+variable "icbg_ip_address" {
+    type = list
     description = "Private static IP address"
 }
 
-variable "wbs_ip_address1" {
+variable "icbg_epicappname" {
     type = string
+    description = "IC background Epic application name"
+}
+
+variable "icfg_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "icfg_epicappname" {
+    type = string
+    description = "IC foreground Epic application name"
+}
+
+variable "ivr_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "ivr_epicappname" {
+    type = string
+    description = "IVR application name"
+}
+
+variable "kpr_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "kpr_epicappname" {
+    type = string
+    description = "Kuiper Epic application name"
+}
+
+variable "myc_ip_address" {
+  type   = list
+  description = "Private static IP address"
+}
+
+variable "myc_epicappname" {
+    type = string
+    description = "MyChart Epic application name"
+}
+
+variable "sp_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "sp_epicappname" {
+    type = string
+    description = "System Pulse Epic application name"
+}
+
+variable "wbs_ip_address" {
+    type = list
     description = "Private static IP address"
 }
 
@@ -96,74 +304,19 @@ variable "wbs_epicappname" {
     description = "WBS Epic application name"
 }
 
-variable "ic_servername0" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "ic_servername1" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "ic_ip_address0" {
-    type = string
+variable "ww_ip_address" {
+    type = list
     description = "Private static IP address"
 }
 
-variable "ic_ip_address1" {
+variable "wbs_storagename" {
     type = string
-    description = "Private static IP address"
+    description = "WBS Storage Account name"
 }
 
-variable "ic_epicappname" {
+variable "ww_epicappname" {
     type = string
-    description = "IC Epic application name"
-}
-
-variable "cc_servername0" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "cc_servername1" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "cc_ip_address0" {
-    type = string
-    description = "Private static IP address"
-}
-
-variable "cc_ip_address1" {
-    type = string
-    description = "Private static IP address"
-}
-
-variable "cc_epicappname" {
-    type = string
-    description = "IC Epic application name"
-}
-
-variable "sp_servername" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "sp_ip_address" {
-    type = string
-    description = "Private static IP address"
-}
-
-variable "kpr_servername" {
-    type = string
-    description = "Server name of the virtual machine"
-}
-
-variable "kpr_ip_address" {
-    type = string
-    description = "Private static IP address"
+    description = "Welcome Web application name"
 }
 
 variable "timezone" {
@@ -181,4 +334,3 @@ variable "os" {
         version = string
   })
 } 
-
