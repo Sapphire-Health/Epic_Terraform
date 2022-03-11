@@ -1,14 +1,16 @@
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface>
 resource "azurerm_network_interface" "nic" {
-  name                = "${var.servername}_nic"
-  location            = var.location
-  resource_group_name = var.rgname
-
+  name                          = "${var.servername}_nic"
+  location                      = var.location
+  resource_group_name           = var.rgname
+  enable_accelerated_networking = "true"
+  
   ip_configuration {
     name                          = "internal"
     subnet_id                     = var.subnet_id
     private_ip_address_allocation = "Static"
 	private_ip_address            = var.ip_address
+	
   }
   
   tags = {

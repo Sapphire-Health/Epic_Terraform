@@ -1,6 +1,7 @@
 location = "eastus2"
 data_storagetype = "StandardSSD_LRS"
-vm_size = "Standard_D2_v5"
+vm_sku_2cpu = "Standard_D2s_v5"
+vm_sku_4cpu = "Standard_D4s_v5"
 
 main_vnet_name = "Epic-Internal-VNET"
 main_vnet_rg = "Epic-Internal"
@@ -15,6 +16,9 @@ dmz_subnet             = ["10.195.120.0/24"]
 	
 domain_name = "lcmchealth.org"
 domain_OU = "OU=Azure,OU=EPIC Servers,OU=EPIC Infrastructure,DC=lcmchealth,DC=org"
+
+dmzfirewall_name = "FW-LCMC-Epic"
+trafficmanager_name = "lcmchealth-mychart"
 
 vm_count = {
 	"bca" = 0

@@ -32,7 +32,6 @@ variable "epicappname" {
 variable "vm_size" {
     type = string
     description = "Size of VM"
-    default = "Standard_D2_v5"
 }
 
 variable "aset_id" {

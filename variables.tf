@@ -73,6 +73,16 @@ variable "domain_OU" {
 	sensitive = true
 }
 
+variable "dmzfirewall_name" {
+    type = string
+    description = "DNS prefix for the DMZ Firewall"
+}
+
+variable "trafficmanager_name" {
+    type = string
+    description = "DNS prefix for the traffic manager"
+}
+
 variable "domain_username" {
     type = string
     description = "Account for Domain Join"
@@ -103,10 +113,14 @@ variable "data_storagetype" {
     default = "StandardSSD_LRS"
 }
 
-variable "vm_size" {
+variable "vm_sku_2cpu" {
     type = string
-    description = "Size of VM"
-    default = "Standard_D2_v5"
+    description = "SKU to use for 2 vCPU servers"
+}
+
+variable "vm_sku_4cpu" {
+    type = string
+    description = "SKU to use for 4 vCPU servers"
 }
 
 variable "vm_count" {
