@@ -57,6 +57,16 @@ variable "timezone" {
     default = "Central Standard Time"
 }
 
+variable "enable_autoupdate" {
+    type = string
+    description = "true or false to enable automatic updates"
+}
+
+variable "patch_mode" {
+    type = string
+    description = "Set Patch Mode to either 'Manual' or 'AutomaticByOS'"
+}
+
 variable "domain_password" {
     type = string
     description = "Domain Admin password"

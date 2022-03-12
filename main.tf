@@ -96,6 +96,7 @@ resource "azurerm_subnet" "epic_mgmt_subnet" {
   resource_group_name  = data.azurerm_virtual_network.main_vnet.resource_group_name
   virtual_network_name = data.azurerm_virtual_network.main_vnet.name
   address_prefixes     = var.epic_mgmt_subnet
+  service_endpoints    = ["Microsoft.Sql"]
 }
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> 
@@ -103,7 +104,7 @@ resource "azurerm_subnet" "azurefw_subnet" {
   name                 = "AzureFirewallSubnet"
   resource_group_name  = data.azurerm_virtual_network.main_vnet.resource_group_name
   virtual_network_name = data.azurerm_virtual_network.main_vnet.name
-  address_prefixes     = var.azurefirewall_subnet
+  address_prefixes     = var.azurefirewall_subnet  
 }
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> 
@@ -112,6 +113,7 @@ resource "azurerm_subnet" "wss_subnet" {
   resource_group_name  = data.azurerm_virtual_network.main_vnet.resource_group_name
   virtual_network_name = data.azurerm_virtual_network.main_vnet.name
   address_prefixes     = var.wss_subnet
+  service_endpoints    = ["Microsoft.Sql" ] 
 }
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> 
@@ -186,7 +188,7 @@ resource "azurerm_network_security_group" "wss_nsg" {
   resource_group_name  = azurerm_resource_group.rg_wss.name
   
   security_rule {
-    name                       = "HTTP"
+    name                       = "HTTP_Inbound"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -197,7 +199,7 @@ resource "azurerm_network_security_group" "wss_nsg" {
     destination_address_prefix = "*"
   }
   security_rule {
-    name                       = "HTTPS"
+    name                       = "HTTPS_Inbound"
     priority                   = 110
     direction                  = "Inbound"
     access                     = "Allow"
@@ -207,6 +209,17 @@ resource "azurerm_network_security_group" "wss_nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  security_rule {
+    name                       = "Kuiper_Inbound"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = ["135","5985-5986"]
+    source_address_prefixes    = var.kpr_ip_address
+    destination_address_prefix = "*"
+  }    
   tags = {
 	Terraform = "Yes"
   }    
@@ -219,7 +232,7 @@ resource "azurerm_network_security_group" "hsw_nsg" {
   resource_group_name  = azurerm_resource_group.rg_hsw.name
   
   security_rule {
-    name                       = "HTTP"
+    name                       = "HTTP_Inbound"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -230,7 +243,7 @@ resource "azurerm_network_security_group" "hsw_nsg" {
     destination_address_prefix = "*"
   }
   security_rule {
-    name                       = "HTTPS"
+    name                       = "HTTPS_Inbound"
     priority                   = 110
     direction                  = "Inbound"
     access                     = "Allow"
@@ -240,6 +253,17 @@ resource "azurerm_network_security_group" "hsw_nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  security_rule {
+    name                       = "Kuiper_Inbound"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = ["135","5985-5986"]
+    source_address_prefixes    = var.kpr_ip_address
+    destination_address_prefix = "*"
+  }  
   tags = {
 	Terraform = "Yes"
   }    
@@ -252,7 +276,7 @@ resource "azurerm_network_security_group" "cogito_nsg" {
   resource_group_name  = azurerm_resource_group.rg_cogito.name
   
   security_rule {
-    name                       = "HTTP"
+    name                       = "HTTP_Inbound"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -263,7 +287,7 @@ resource "azurerm_network_security_group" "cogito_nsg" {
     destination_address_prefix = "*"
   }
   security_rule {
-    name                       = "HTTPS"
+    name                       = "HTTPS_Inbound"
     priority                   = 110
     direction                  = "Inbound"
     access                     = "Allow"
@@ -273,6 +297,17 @@ resource "azurerm_network_security_group" "cogito_nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  security_rule {
+    name                       = "Kuiper_Inbound"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = ["135","5985-5986"]
+    source_address_prefixes    = var.kpr_ip_address
+    destination_address_prefix = "*"
+  }    
   tags = {
 	Terraform = "Yes"
   }    
@@ -284,8 +319,52 @@ resource "azurerm_network_security_group" "hyperspace_nsg" {
   location             = azurerm_resource_group.rg_hyperspace.location
   resource_group_name  = azurerm_resource_group.rg_hyperspace.name
   
+    security_rule {
+    name                       = "HTTP_Inbound"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
   security_rule {
-    name                       = "HTTPS"
+    name                       = "HTTPS_Inbound"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "RDP_Inbound"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }  
+  security_rule {
+    name                       = "HTTP_Outbound"
+    priority                   = 100
+    direction                  = "Outbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "HTTPS_Outbound"
     priority                   = 110
     direction                  = "Outbound"
     access                     = "Allow"
@@ -295,6 +374,28 @@ resource "azurerm_network_security_group" "hyperspace_nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  security_rule {
+    name                       = "SMB_Outbound"
+    priority                   = 120
+    direction                  = "Outbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "445"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "Printing_Outbound"
+    priority                   = 130
+    direction                  = "Outbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "9100"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }  
   tags = {
 	Terraform = "Yes"
   }    
@@ -307,7 +408,7 @@ resource "azurerm_network_security_group" "dmz_nsg" {
   resource_group_name  = azurerm_resource_group.rg_dmz.name
 
   security_rule {
-    name                       = "HTTPS"
+    name                       = "HTTPS_Inbound"
     priority                   = 110
     direction                  = "Inbound"
     access                     = "Allow"
@@ -395,6 +496,27 @@ resource "azurerm_traffic_manager_profile" "trafficman" {
   }
 }
 
+###############Automation Account################
+resource "azurerm_automation_account" "automationacct" {
+  name                = var.automation_acctname
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
+  location            = azurerm_resource_group.rg_mgmt.location
+  sku_name            = "Basic"
+
+  tags = {
+    Terraform = "Yes"
+  }
+}
+
+###############Log Analytics Workspacet################
+resource "azurerm_log_analytics_workspace" "logws" {
+  name                = var.logws_name
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
+  location            = azurerm_resource_group.rg_mgmt.location
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
 ###############BCA###############
 resource "azurerm_availability_set" "bca_aset" {
   name                = "${var.bca_epicappname}_ASET"
@@ -420,6 +542,8 @@ module "bca_vms" {
   aset_id            = azurerm_availability_set.bca_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"
   domain_password    = var.domain_password
 }
 
@@ -448,6 +572,8 @@ module "bcaw_vms" {
   aset_id            = azurerm_availability_set.bcaw_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -476,6 +602,8 @@ module "ce_vms" {
   aset_id            = azurerm_availability_set.ce_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -504,10 +632,12 @@ module "cerp_vms" {
   aset_id            = azurerm_availability_set.cerp_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
-###############Cloud Connector###############
+###############Citrix Cloud Connector###############
 resource "azurerm_availability_set" "citrixcc_aset" {
   name                = "${var.citrixcc_epicappname}_ASET"
   location            = azurerm_resource_group.rg_mgmt.location
@@ -532,6 +662,38 @@ module "cc_vms" {
   aset_id            = azurerm_availability_set.citrixcc_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
+  domain_password    = var.domain_password
+}
+
+###############Citrix Storefront###############
+resource "azurerm_availability_set" "citrixsf_aset" {
+  name                = "${var.citrixsf_epicappname}_ASET"
+  location            = azurerm_resource_group.rg_mgmt.location
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
+  
+  tags = {
+    EpicApp = var.citrixsf_epicappname
+	Terraform = "Yes"
+  }
+}
+module "sf_vms" {
+  count              = var.vm_count["citrixsf"]
+
+  source             = "./modules/azure-virtual-machine"
+  servername         = "EPIC-AZR-${var.citrixsf_epicappname}${count.index}"
+  location           = azurerm_resource_group.rg_mgmt.location
+  rgname             = azurerm_resource_group.rg_mgmt.name
+  subnet_id          = azurerm_subnet.epic_mgmt_subnet.id
+  ip_address         = var.citrixsf_ip_address[count.index]
+  epicappname        = var.citrixsf_epicappname
+  vm_size            = var.vm_sku_4cpu
+  aset_id            = azurerm_availability_set.citrixsf_aset.id
+  admin_username     = var.admin_username
+  admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -560,6 +722,8 @@ module "dss_vms" {
   aset_id            = azurerm_availability_set.dss_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -588,6 +752,8 @@ module "eclink_vms" {
   aset_id            = azurerm_availability_set.eclink_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -616,6 +782,8 @@ module "eps_vms" {
   aset_id            = azurerm_availability_set.eps_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -644,6 +812,8 @@ module "fax_vms" {
   aset_id            = azurerm_availability_set.fax_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -672,6 +842,8 @@ module "hsw_vms" {
   aset_id            = azurerm_availability_set.hsw_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "false"
+  patch_mode         = "Manual"  
   domain_password    = var.domain_password
 }
 
@@ -700,6 +872,8 @@ module "icbg_vms" {
   aset_id            = azurerm_availability_set.icbg_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -728,6 +902,8 @@ module "icfg_vms" {
   aset_id            = azurerm_availability_set.icfg_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -756,6 +932,8 @@ module "ivr_vms" {
   aset_id            = azurerm_availability_set.ivr_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -784,6 +962,8 @@ module "kpr_vms" {
   aset_id            = azurerm_availability_set.kpr_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -827,6 +1007,8 @@ module "myc_vms" {
   aset_id            = azurerm_availability_set.myc_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -855,6 +1037,8 @@ module "sp_vms" {
   aset_id            = azurerm_availability_set.sp_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -884,6 +1068,8 @@ module "wbs_vms" {
   aset_id            = azurerm_availability_set.wbs_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -922,6 +1108,8 @@ module "ww_vms" {
   aset_id            = azurerm_availability_set.ww_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
 }
 
@@ -929,7 +1117,7 @@ module "ww_vms" {
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_server>
 resource "azurerm_mssql_server" "sqlserver" {
-  name                          = "epic-azr-db00"
+  name                          = var.sqlserver_name
   location                      = azurerm_resource_group.rg_wss.location
   resource_group_name           = azurerm_resource_group.rg_wss.name  
   version                       = "12.0"
@@ -941,11 +1129,23 @@ resource "azurerm_mssql_server" "sqlserver" {
   }
 }
 
+## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_virtual_network_rule>
+resource "azurerm_mssql_virtual_network_rule" "mgmtsqlrule" {
+  name      = "mgmt-sql-vnet-rule"
+  server_id = azurerm_mssql_server.sqlserver.id
+  subnet_id = azurerm_subnet.epic_mgmt_subnet.id
+}
+
+resource "azurerm_mssql_virtual_network_rule" "wsssqlrule" {
+  name      = "wss-sql-vnet-rule"
+  server_id = azurerm_mssql_server.sqlserver.id
+  subnet_id = azurerm_subnet.wss_subnet.id
+}
+
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_database>
 resource "azurerm_mssql_database" "kuiperdb" {
   name                          = "Kuiper"
   server_id                     = azurerm_mssql_server.sqlserver.id
-  license_type                  = "BasePrice"
   max_size_gb                   = 250
   sku_name                      = "S1"
   
@@ -958,7 +1158,6 @@ resource "azurerm_mssql_database" "kuiperdb" {
 resource "azurerm_mssql_database" "bcadb" {
   name                          = "BCAWeb"
   server_id                     = azurerm_mssql_server.sqlserver.id  
-  license_type                  = "BasePrice"
   max_size_gb                   = 250
   sku_name                      = "S1"
   
@@ -970,7 +1169,6 @@ resource "azurerm_mssql_database" "bcadb" {
 resource "azurerm_mssql_database" "pulsedb" {
   name                          = "SystemPulse"
   server_id                     = azurerm_mssql_server.sqlserver.id  
-  license_type                  = "BasePrice"
   max_size_gb                   = 250
   sku_name                      = "S1"
   

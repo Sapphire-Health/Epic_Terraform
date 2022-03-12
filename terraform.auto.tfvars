@@ -20,12 +20,16 @@ domain_OU = "OU=Azure,OU=EPIC Servers,OU=EPIC Infrastructure,DC=lcmchealth,DC=or
 dmzfirewall_name = "FW-LCMC-Epic"
 trafficmanager_name = "lcmchealth-mychart"
 
+automation_acctname = "Epic-Automation"
+logws_name = "Epic-LogAnalyticsWS"
+
 vm_count = {
 	"bca" = 0
 	"bcaw" = 0
 	"ce" = 0
 	"cerp" = 0
 	"citrixcc" = 2	
+	"citrixsf" = 2
 	"dss" = 0
 	"eclink" = 0
 	"eps" = 0
@@ -55,6 +59,9 @@ cerp_epicappname = "CERP"
 
 citrixcc_ip_address = ["10.195.112.20","10.195.112.21"]
 citrixcc_epicappname = "CC"
+
+citrixsf_ip_address = ["10.195.112.27","10.195.112.28"]
+citrixsf_epicappname = "SF"
 
 dss_ip_address = ["10.195.113.11","10.195.113.12"]
 dss_epicappname = "DSS"
@@ -95,6 +102,8 @@ wbs_storagename = "lcmcwbsstorage"
 
 ww_ip_address = ["10.195.113.28","10.195.113.29"]
 ww_epicappname = "WW"
+
+sqlserver_name = "epic-azr-db00"
 
 timezone = "Central Standard Time"
 os = {

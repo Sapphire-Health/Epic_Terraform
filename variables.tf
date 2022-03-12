@@ -80,7 +80,17 @@ variable "dmzfirewall_name" {
 
 variable "trafficmanager_name" {
     type = string
-    description = "DNS prefix for the traffic manager"
+    description = "Mychart Traffic Manager name"
+}
+
+variable "automation_acctname" {
+    type = string
+    description = "Automation Account name"
+}
+
+variable "logws_name" {
+    type = string
+    description = "Log Analytics Workspace name"
 }
 
 variable "domain_username" {
@@ -131,7 +141,8 @@ variable "vm_count" {
 			"bcaw" = 0
 			"ce" = 0
 			"cerp" = 0
-			"citrixcc" = 0			
+			"citrixcc" = 0	
+			"citrixsf" = 0
 			"dss" = 0
 			"eclink" = 0
 			"eps" = 0
@@ -196,6 +207,16 @@ variable "citrixcc_ip_address" {
 variable "citrixcc_epicappname" {
     type = string
     description = "Citrix Cloud Connector application name"
+}
+
+variable "citrixsf_ip_address" {
+    type = list
+    description = "Private static IP address"
+}
+
+variable "citrixsf_epicappname" {
+    type = string
+    description = "Citrix Storefront application name"
 }
 
 variable "dss_ip_address" {
@@ -332,6 +353,12 @@ variable "ww_epicappname" {
     type = string
     description = "Welcome Web application name"
 }
+
+variable "sqlserver_name" {
+    type = string
+    description = "SQL Server name"
+}
+
 
 variable "timezone" {
     type = string

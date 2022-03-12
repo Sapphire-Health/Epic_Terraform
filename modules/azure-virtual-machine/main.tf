@@ -21,14 +21,16 @@ resource "azurerm_network_interface" "nic" {
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_virtual_machine>
 resource "azurerm_windows_virtual_machine" "vm" {
-  name                = var.servername
-  resource_group_name = var.rgname
-  location            = var.location
-  size                = var.vm_size
-  availability_set_id = var.aset_id
-  admin_username      = var.admin_username
-  admin_password      = var.admin_password
-  timezone            = var.timezone
+  name                      = var.servername
+  resource_group_name       = var.rgname
+  location                  = var.location
+  size                      = var.vm_size
+  availability_set_id       = var.aset_id
+  admin_username            = var.admin_username
+  admin_password            = var.admin_password
+  timezone                  = var.timezone
+  enable_automatic_updates  = var.enable_autoupdate
+  patch_mode                = var.patch_mode
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
