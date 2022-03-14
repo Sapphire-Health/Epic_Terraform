@@ -354,24 +354,33 @@ variable "ww_epicappname" {
     description = "Welcome Web application name"
 }
 
-variable "sqlserver_name" {
-    type = string
-    description = "SQL Server name"
+variable "sql_ip_address" {
+    type = list
+    description = "Private static IP address"
 }
 
+variable "sql_epicappname" {
+    type = string
+    description = "SQL Epic application name"
+}
+
+variable "sql_datapath" {
+	type = string
+	description = "SQL Server default data path"
+}
+
+variable "sql_logpath" {
+	type = string
+	description = "SQL Server default log path"
+}
+
+variable "sql_temppath" {
+	type = string
+	description = "SQL Server default temp path"
+}
 
 variable "timezone" {
     type = string
     description = "OS Timezone"
     default = "Central Standard Time"
 }
-
-variable "os" {
-    description = "OS image to deploy"
-    type = object({
-        publisher = string
-        offer = string
-        sku = string
-        version = string
-  })
-} 

@@ -1115,65 +1115,38 @@ module "ww_vms" {
 
 ###############SQL###############
 
-## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_server>
-resource "azurerm_mssql_server" "sqlserver" {
-  name                          = var.sqlserver_name
-  location                      = azurerm_resource_group.rg_wss.location
-  resource_group_name           = azurerm_resource_group.rg_wss.name  
-  version                       = "12.0"
-  administrator_login           = var.sql_username
-  administrator_login_password  = var.sql_password
+resource "azurerm_availability_set" "sql_aset" {
+  name                = "${var.sql_epicappname}_ASET"
+  location            = azurerm_resource_group.rg_mgmt.location
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
   
   tags = {
+    EpicApp = var.sql_epicappname
 	Terraform = "Yes"
   }
 }
 
-## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_virtual_network_rule>
-resource "azurerm_mssql_virtual_network_rule" "mgmtsqlrule" {
-  name      = "mgmt-sql-vnet-rule"
-  server_id = azurerm_mssql_server.sqlserver.id
-  subnet_id = azurerm_subnet.epic_mgmt_subnet.id
+module "sql_vms" {
+  count              = var.vm_count["sql"]
+
+  source             = "./modules/azure-sql-virtual-machine"
+  servername         = "EPIC-AZR-${var.sql_epicappname}${count.index}"
+  location           = azurerm_resource_group.rg_mgmt.location
+  rgname             = azurerm_resource_group.rg_mgmt.name
+  subnet_id          = azurerm_subnet.epic_mgmt_subnet.id
+  ip_address         = var.sql_ip_address[count.index]
+  epicappname        = var.sql_epicappname
+  vm_size            = var.vm_sku_4cpu
+  aset_id            = azurerm_availability_set.sql_aset.id
+  admin_username     = var.admin_username
+  admin_password     = var.admin_password
+  sql_username       = var.sql_username
+  sql_password       = var.sql_password
+  sql_datapath       = var.sql_datapath
+  sql_logpath        = var.sql_logpath
+  sql_temppath       = var.sql_temppath
+  enable_autoupdate  = "true"
+  patch_mode         = "AutomaticByOS"  
+  domain_password    = var.domain_password
 }
 
-resource "azurerm_mssql_virtual_network_rule" "wsssqlrule" {
-  name      = "wss-sql-vnet-rule"
-  server_id = azurerm_mssql_server.sqlserver.id
-  subnet_id = azurerm_subnet.wss_subnet.id
-}
-
-## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_database>
-resource "azurerm_mssql_database" "kuiperdb" {
-  name                          = "Kuiper"
-  server_id                     = azurerm_mssql_server.sqlserver.id
-  max_size_gb                   = 250
-  sku_name                      = "S1"
-  
-  
-  tags = {
-	Terraform = "Yes"
-  }
-}
-
-resource "azurerm_mssql_database" "bcadb" {
-  name                          = "BCAWeb"
-  server_id                     = azurerm_mssql_server.sqlserver.id  
-  max_size_gb                   = 250
-  sku_name                      = "S1"
-  
-  
-  tags = {
-	Terraform = "Yes"
-  }
-}
-resource "azurerm_mssql_database" "pulsedb" {
-  name                          = "SystemPulse"
-  server_id                     = azurerm_mssql_server.sqlserver.id  
-  max_size_gb                   = 250
-  sku_name                      = "S1"
-  
-  
-  tags = {
-	Terraform = "Yes"
-  }
-}

@@ -43,6 +43,7 @@ vm_count = {
 	"sp" = 1
 	"wbs" = 2
 	"ww" = 0
+	"sql" = 1
 }
 
 bca_ip_address = ["10.195.113.4","10.195.113.5"]
@@ -103,13 +104,12 @@ wbs_storagename = "lcmcwbsstorage"
 ww_ip_address = ["10.195.113.28","10.195.113.29"]
 ww_epicappname = "WW"
 
-sqlserver_name = "epic-azr-db00"
+sql_ip_address  = ["10.195.112.25"]
+sql_epicappname = "SQL"
+sql_datapath    = "F:\\Data"
+sql_logpath     = "G:\\Log"
+sql_temppath    = "H:\\tempDB"
 
 timezone = "Central Standard Time"
-os = {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
-    version   = "latest"
-}
+
 
