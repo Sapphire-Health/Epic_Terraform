@@ -128,9 +128,19 @@ variable "vm_sku_2cpu" {
     description = "SKU to use for 2 vCPU servers"
 }
 
+variable "vm_sku_2cpuv4" {
+    type = string
+    description = "SKU to use for 2 vCPU servers using v4 CPUs"
+}
+
 variable "vm_sku_4cpu" {
     type = string
     description = "SKU to use for 4 vCPU servers"
+}
+
+variable "vm_sku_4cpuv4" {
+    type = string
+    description = "SKU to use for 2 vCPU servers using v4 CPUs"
 }
 
 variable "vm_count" {
@@ -377,6 +387,11 @@ variable "sql_logpath" {
 variable "sql_temppath" {
 	type = string
 	description = "SQL Server default temp path"
+}
+
+variable "shutdown" {
+    type = bool
+    description = "Should the VM auto shutdown"
 }
 
 variable "timezone" {

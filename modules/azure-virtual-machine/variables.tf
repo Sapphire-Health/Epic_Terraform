@@ -72,3 +72,9 @@ variable "domain_password" {
     description = "Domain Admin password"
 	sensitive = true
 }
+
+variable "shutdown" {
+    type = bool
+    description = "Should the VM auto shutdown"
+}
+

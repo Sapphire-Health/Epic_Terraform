@@ -78,6 +78,8 @@ resource "azurerm_virtual_machine_data_disk_attachment" "ddiskattach" {
   caching            = "None"
 }
 
+
+
 resource "azurerm_virtual_machine_extension" "domjoin" {
   name                 = "domjoin"
   virtual_machine_id   = azurerm_windows_virtual_machine.vm.id
@@ -101,4 +103,27 @@ resource "azurerm_virtual_machine_extension" "domjoin" {
   }
   PROTECTED_SETTINGS
   
+}
+
+##<https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dev_test_global_vm_shutdown_schedule>
+resource "azurerm_dev_test_global_vm_shutdown_schedule" "shutdown" {
+  virtual_machine_id = azurerm_windows_virtual_machine.vm.id
+  location           = var.location
+  enabled            = var.shutdown
+
+  daily_recurrence_time = "1800"
+  timezone              = var.timezone
+
+  notification_settings {
+    enabled         = false
+    time_in_minutes = "60"
+    webhook_url     = "https://sample-webhook-url.example.com"
+  }
+}
+
+##resource "azurerm_backup_protected_vm" "vmbackup" {
+##  resource_group_name = var.rgname
+##  recovery_vault_name = var.vault
+##  source_vm_id        = azurerm_virtual_machine.vm.id
+##  backup_policy_id    = var.policy
 }

@@ -1,7 +1,9 @@
 location = "eastus2"
 data_storagetype = "StandardSSD_LRS"
 vm_sku_2cpu = "Standard_D2s_v5"
+vm_sku_2cpuv4 = "Standard_D2s_v4"
 vm_sku_4cpu = "Standard_D4s_v5"
+vm_sku_4cpuv4 = "Standard_D4s_v4"
 
 main_vnet_name = "Epic-Internal-VNET"
 main_vnet_rg = "Epic-Internal"
@@ -32,11 +34,11 @@ vm_count = {
 	"citrixsf" = 2
 	"dss" = 0
 	"eclink" = 0
-	"eps" = 0
+	"eps" = 1
 	"fax" = 0
 	"hsw" = 2
 	"icbg" = 2
-	"icfg" = 0
+	"icfg" = 2
 	"ivr" = 0
 	"kpr" = 1
 	"myc" = 2
@@ -46,10 +48,10 @@ vm_count = {
 	"sql" = 1
 }
 
-bca_ip_address = ["10.195.113.4","10.195.113.5"]
+bca_ip_address = ["10.195.113.30","10.195.113.31"]
 bca_epicappname = "BCA"
 
-bcaw_ip_address = ["10.195.113.6"]
+bcaw_ip_address = ["10.195.113.32"]
 bcaw_epicappname = "BCAW"
 
 ce_ip_address = ["10.195.113.7","10.195.113.8"]
@@ -110,6 +112,7 @@ sql_datapath    = "F:\\Data"
 sql_logpath     = "G:\\Log"
 sql_temppath    = "H:\\tempDB"
 
+shutdown = "true"
 timezone = "Central Standard Time"
 
 

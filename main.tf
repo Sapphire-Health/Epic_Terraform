@@ -113,7 +113,8 @@ resource "azurerm_subnet" "wss_subnet" {
   resource_group_name  = data.azurerm_virtual_network.main_vnet.resource_group_name
   virtual_network_name = data.azurerm_virtual_network.main_vnet.name
   address_prefixes     = var.wss_subnet
-  service_endpoints    = ["Microsoft.Sql" ] 
+  service_endpoints    = ["Microsoft.Sql", "Microsoft.Storage"]
+  enforce_private_link_endpoint_network_policies = true
 }
 
 ## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> 
@@ -460,16 +461,16 @@ resource "azurerm_subnet_network_security_group_association" "dmz_nsg_attach" {
 }
 
 ###############Azure Firewalls################
-module "dmz_firewall" {
-  source     = "./modules/azure-firewall"
+#module "dmz_firewall" {
+#  source     = "./modules/azure-firewall"
   
-  fwname     = var.dmzfirewall_name
-  location   = data.azurerm_virtual_network.main_vnet.location
-  rgname     = data.azurerm_virtual_network.main_vnet.resource_group_name
-  fwsku      = "Standard"
-  subnet_id  = azurerm_subnet.azurefw_subnet.id
+#  fwname     = var.dmzfirewall_name
+#  location   = data.azurerm_virtual_network.main_vnet.location
+#  rgname     = data.azurerm_virtual_network.main_vnet.resource_group_name
+#  fwsku      = "Standard"
+#  subnet_id  = azurerm_subnet.azurefw_subnet.id
 
-}
+#}
 
 ###############Traffic Managers################
 resource "azurerm_traffic_manager_profile" "trafficman" {
@@ -483,9 +484,9 @@ resource "azurerm_traffic_manager_profile" "trafficman" {
   }
 
   monitor_config {
-    protocol                     = "http"
-    port                         = 80
-    path                         = "/"
+    protocol                     = "tcp"
+    port                         = 443
+    path                         = ""
     interval_in_seconds          = 30
     timeout_in_seconds           = 10
     tolerated_number_of_failures = 3
@@ -506,6 +507,38 @@ resource "azurerm_automation_account" "automationacct" {
   tags = {
     Terraform = "Yes"
   }
+}
+
+###############Recovery Services Vault################
+## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/recovery_services_vault>
+resource "azurerm_recovery_services_vault" "vault" {
+  name                = "lcmc-epic-recovery-vault"
+  location            = azurerm_resource_group.rg_mgmt.location
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
+  sku                 = "Standard"
+  storage_mode_type   = "ZoneRedundant"
+
+  soft_delete_enabled = true
+  tags = {
+    Terraform = "Yes"
+  }  
+}
+
+resource "azurerm_backup_policy_vm" "epicweeklybp" {
+  name                = "epic-weekly-recovery-policy"
+  resource_group_name = azurerm_resource_group.rg_mgmt.name
+  recovery_vault_name = azurerm_recovery_services_vault.vault.name
+
+  backup {
+    frequency = "Weekly"
+    time      = "02:00"
+	weekdays  = ["Sunday"]
+  }
+  retention_weekly {
+    count     = "2"
+	weekdays  = ["Sunday"]
+  }
+  timezone    = var.timezone
 }
 
 ###############Log Analytics Workspacet################
@@ -538,13 +571,15 @@ module "bca_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.bca_ip_address[count.index]
   epicappname        = var.bca_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.bca_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############BCA Web###############
@@ -568,13 +603,15 @@ module "bcaw_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.bcaw_ip_address[count.index]
   epicappname        = var.bcaw_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.bcaw_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Care Everywhere###############
@@ -598,13 +635,15 @@ module "ce_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.ce_ip_address[count.index]
   epicappname        = var.ce_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.ce_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Care Everywhere RP###############
@@ -628,13 +667,15 @@ module "cerp_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.cerp_ip_address[count.index]
   epicappname        = var.cerp_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.cerp_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Citrix Cloud Connector###############
@@ -665,6 +706,8 @@ module "cc_vms" {
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = "false"
+  timezone           = var.timezone  
 }
 
 ###############Citrix Storefront###############
@@ -688,13 +731,15 @@ module "sf_vms" {
   subnet_id          = azurerm_subnet.epic_mgmt_subnet.id
   ip_address         = var.citrixsf_ip_address[count.index]
   epicappname        = var.citrixsf_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.citrixsf_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############DSS###############
@@ -718,13 +763,15 @@ module "dss_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.dss_ip_address[count.index]
   epicappname        = var.dss_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.dss_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############EpicCare Link###############
@@ -748,13 +795,15 @@ module "eclink_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.eclink_ip_address[count.index]
   epicappname        = var.eclink_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.eclink_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Epic Print Service###############
@@ -778,13 +827,15 @@ module "eps_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.eps_ip_address[count.index]
   epicappname        = var.eps_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.eps_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Fax Server###############
@@ -808,13 +859,15 @@ module "fax_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.fax_ip_address[count.index]
   epicappname        = var.fax_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.fax_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############HSW###############
@@ -838,13 +891,15 @@ module "hsw_vms" {
   subnet_id          = azurerm_subnet.hsw_subnet.id
   ip_address         = var.hsw_ip_address[count.index]
   epicappname        = var.hsw_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.hsw_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "false"
   patch_mode         = "Manual"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Interconnect Background###############
@@ -868,13 +923,15 @@ module "icbg_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.icbg_ip_address[count.index]
   epicappname        = var.icbg_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.icbg_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone
 }
 
 ###############Interconnect Foreground###############
@@ -898,13 +955,15 @@ module "icfg_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.icfg_ip_address[count.index]
   epicappname        = var.icfg_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.icfg_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############IVR###############
@@ -928,13 +987,15 @@ module "ivr_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.ivr_ip_address[count.index]
   epicappname        = var.ivr_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.ivr_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############Kuiper###############
@@ -958,13 +1019,15 @@ module "kpr_vms" {
   subnet_id          = azurerm_subnet.epic_mgmt_subnet.id
   ip_address         = var.kpr_ip_address[count.index]
   epicappname        = var.kpr_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.kpr_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############MyChart###############
@@ -1003,13 +1066,15 @@ module "myc_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.myc_ip_address[count.index]
   epicappname        = var.myc_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.myc_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############System Pulse###############
@@ -1033,13 +1098,15 @@ module "sp_vms" {
   subnet_id          = azurerm_subnet.epic_mgmt_subnet.id
   ip_address         = var.sp_ip_address[count.index]
   epicappname        = var.sp_epicappname
-  vm_size            = var.vm_sku_4cpu
+  vm_size            = var.vm_sku_4cpuv4
   aset_id            = azurerm_availability_set.sp_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############WBS###############
@@ -1064,15 +1131,18 @@ module "wbs_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.wbs_ip_address[count.index]
   epicappname        = var.wbs_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.wbs_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
+## <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account>
 resource "azurerm_storage_account" "wbsstorage" {
 	name = var.wbs_storagename
 	resource_group_name = azurerm_resource_group.rg_storage.name
@@ -1081,6 +1151,52 @@ resource "azurerm_storage_account" "wbsstorage" {
 	account_tier = "Standard"
 	account_replication_type = "ZRS"
 	access_tier = "Hot"
+##	network_rules {
+##		default_action             = "Deny"
+##		virtual_network_subnet_ids = [azurerm_subnet.wss_subnet.id]
+##  }
+}
+
+resource "azurerm_storage_share" "rootshare" {
+  name                 = "wbsroot"
+  storage_account_name = azurerm_storage_account.wbsstorage.name
+  quota                = 50
+}
+
+resource "azurerm_storage_share" "readshare" {
+  name                 = "wbsread"
+  storage_account_name = azurerm_storage_account.wbsstorage.name
+  quota                = 50
+}
+
+resource "azurerm_storage_share_directory" "rootdir" {
+  name                 = "Root"
+  share_name           = azurerm_storage_share.rootshare.name
+  storage_account_name = azurerm_storage_account.wbsstorage.name
+}
+
+resource "azurerm_storage_share_directory" "readdir" {
+  name                 = "Read"
+  share_name           = azurerm_storage_share.readshare.name
+  storage_account_name = azurerm_storage_account.wbsstorage.name
+}
+
+resource "azurerm_private_endpoint" "wbsendpoint" {
+  name                = "wbs-PEP"
+  location            = azurerm_resource_group.rg_storage.location
+  resource_group_name = azurerm_resource_group.rg_storage.name
+  subnet_id           = azurerm_subnet.wss_subnet.id
+
+  private_service_connection {
+    name                           = "wbs-privateserviceconnection"
+    private_connection_resource_id = azurerm_storage_account.wbsstorage.id
+    is_manual_connection           = false
+	subresource_names              = ["file"]
+  }
+  tags = {
+    EpicApp = var.wbs_epicappname
+	Terraform = "Yes"
+  }
 }
 
 ###############Welcome Web###############
@@ -1104,13 +1220,15 @@ module "ww_vms" {
   subnet_id          = azurerm_subnet.wss_subnet.id
   ip_address         = var.ww_ip_address[count.index]
   epicappname        = var.ww_epicappname
-  vm_size            = var.vm_sku_2cpu
+  vm_size            = var.vm_sku_2cpuv4
   aset_id            = azurerm_availability_set.ww_aset.id
   admin_username     = var.admin_username
   admin_password     = var.admin_password
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  shutdown           = var.shutdown
+  timezone           = var.timezone  
 }
 
 ###############SQL###############
@@ -1148,5 +1266,6 @@ module "sql_vms" {
   enable_autoupdate  = "true"
   patch_mode         = "AutomaticByOS"  
   domain_password    = var.domain_password
+  timezone           = var.timezone  
 }
 
